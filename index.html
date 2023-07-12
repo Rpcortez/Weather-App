@@ -1,94 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Web</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Web</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <div class="card">
-        <div class="search">
-            <input type="text" placeholder="Enter City Name", spellcheck="false">
-            <button><img src="images/search.png"></button>
-        </div>
-        <div class="error">
-            <p>City Not Found</p>
-        </div>
-        <div class="weather">
-            <img src="images/rain.png" class="weather-icon">
-            <h1 class="Temp">22°C</h1>
-            <h2 class="City">New Jersey</h2>
-            <div class="details">
-                <div class="col">
-                    <img src="images/humidity.png">
-                    <div>
-                        <p class="humidity">50%</p>
-                        <p>Humidity</p>
-                    </div>
-                </div>
-                <div class="col">
-                    <img src="images/wind.png">
-                    <div>
-                        <p class="Wind">15 km/h</p>
-                        <p>Wind Speed</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="card">
+    <div class="search">
+      <input type="text" placeholder="Enter City Name" spellcheck="false">
+      <button><img src="images/search.png"></button>
     </div>
+    <div class="error" style="display: none;">
+      <p>City Not Found</p>
+    </div>
+    <div class="weather" style="display: none;">
+      <img src="images/rain.png" class="weather-icon">
+      <h1 class="Temp">22°F</h1>
+      <h2 class="City">New Jersey</h2>
+      <div class="details">
+        <div class="col">
+          <img src="images/humidity.png">
+          <div>
+            <p class="humidity">50%</p>
+            <p>Humidity</p>
+          </div>
+        </div>
+        <div class="col">
+          <img src="images/wind.png">
+          <div>
+            <p class="Wind">15 mph</p>
+            <p>Wind Speed</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <script>
-        const apikey = "6a726be63b4c2235252404124ec3ca0b";
-        const apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=Freehold&appid=&units=metric";
-        
-        const searchBox = document.querySelector(".search input");
-        const searchBtn =  document.querySelector(".search button");
-        const weathericon = document.querySelector(".weather-icon");
+  <script>
+    const apikey = "6a726be63b4c2235252404124ec3ca0b";
+    const apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=";
 
+    const searchBox = document.querySelector(".search input");
+    const searchBtn = document.querySelector(".search button");
+    const weathericon = document.querySelector(".weather-icon");
 
-        async function checkWeather(city){
-            const reponse = await fetch(apiUrl + city + `&appid =${apikey}`);
+    async function checkWeather(city) {
+      const response = await fetch(apiUrl + city + `&appid=${apikey}&units=imperial`);
 
-            if(reponse.status == 404){
-                document.querySelector(".error").style.display = "block"
-                document.querySelector(".weather").style.display = "none"
-            }else{
-                var data = await response.json();
+      try {
+        const data = await response.json();
 
-            console.log(data);
+        if (response.status == 404 || data.cod == "404") {
+          document.querySelector(".error").style.display = "block";
+          document.querySelector(".weather").style.display = "none";
+        } else {
+          document.querySelector(".City").innerHTML = data.name;
+          document.querySelector(".Temp").innerHTML = Math.round(data.main.temp) + "°F";
+          document.querySelector(".humidity").innerHTML = data.main.humidity + "%";
+          document.querySelector(".Wind").innerHTML = data.wind.speed + " mph";
 
-            document.querySelector(".city").innerHTML = data.name;
-            document.querySelector(".temp").innerHTML = Math.round(data.main.temp) + "°C";
-            document.querySelector(".humidity").innerHTML = data.main.humidity + "%";
-            document.querySelector(".wind").innerHTML = data.wind.speed+ " km/h";
-
-            if(data.weather[0].main == "Clouds"){
-                weathericon.src = "images/clouds.png";
+          if (data.weather && data.weather[0]) {
+            const weatherMain = data.weather[0].main;
+            if (weatherMain == "Clouds") {
+              weathericon.src = "images/clouds.png";
+            } else if (weatherMain == "Clear") {
+              weathericon.src = "images/clear.png";
+            } else if (weatherMain == "Rain") {
+              weathericon.src = "images/rain.png";
+            } else if (weatherMain == "Mist") {
+              weathericon.src = "images/mist.png";
             }
-            else if(data.weather[0].main == "Clear"){
-                weathericon.src = "images/clear.png";
-            }
-            else if(data.weather[0].main == "Rain"){
-                weathericon.src = "images/rain.png";
-            }
-            else if(data.weather[0].main == "Mist"){
-                weathericon.src = "images/mist.png";
-            }
+          }
 
-            document.querySelector(".weather").style.display = "block"
-            }
-
-            
-            
+          document.querySelector(".error").style.display = "none";
+          document.querySelector(".weather").style.display = "block";
         }
+      } catch (error) {
+        console.error(error);
+        document.querySelector(".error").style.display = "block";
+        document.querySelector(".weather").style.display = "none";
+      }
 
-        searchBtn.addEventListener("click", ()=>{
-            checkWeather(searchBox.value);
-        })
+      if (!city || response.status == 404 || data.cod == "404") {
+        document.querySelector(".error").style.display = "none";
+        document.querySelector(".weather").style.display = "none";
+      }
+    }
 
-        checkWeather();
-    </script>
-    
+    searchBtn.addEventListener("click", () => {
+      checkWeather(searchBox.value);
+    });
+
+    checkWeather();
+  </script>
 </body>
+
 </html>
